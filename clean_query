@@ -1,0 +1,65 @@
+with
+new_quantity as (
+  select 
+    InvoiceNo,
+    StockCode,
+    Description,
+    case
+      when Quantity < 0 then Quantity * (-1)
+      else Quantity
+    end as Quantity,
+    InvoiceDate,
+    date(InvoiceDate + interval '7' hour) as date_wib,
+    UnitPrice,
+    CustomerID,
+    Country
+  from `torch-26.online_shoppers.online_shop`
+),
+
+new_desc as (
+  select
+    InvoiceNo,
+    StockCode,
+    case 
+      when lower(description) like "%23343%" and stockcode = '20713' then "Wrongly coded 23343"
+      when lower(description) like "%found%" then "Found"
+      when lower(description) like "%damage%" then "Damaged"
+      when lower(description) like "%20713%" and stockcode = '23343' then "Wrongly coded 20713"
+      when upper(description) like "%MISTLETOE HEART WREATH CREAM%" then "MISELTOE HEART WREATH CREAM"
+      when lower(description) like "amazon" or lower(description) like "amazon sales" then "Amazon sales"
+      when lower(description) like "dotcom" or lower(description) like "dotcom sales" then "Dotcom sales"
+      when lower(description) like "dotcom set" or lower(description) like "dotcom sold sets" or lower(description) like "sold as set on dotcom" or lower(description) like "sold as set by dotcom" then "Dotcom set"
+      when lower(description) like "check" or lower(description) like "stock check" then "Check"
+      when lower(description) like "%missing%" then "Missing"
+      when lower(description) like "%had been put aside%" then "Had been put aside"
+      when description like "N0 SINGING METAL SIGN" then "NO SINGING METAL SIGN"
+      when description like "TUMBLER, NEW ENGLAND" then "TUMBLER NEW ENGLAND"
+      when lower(description) like "%doiley%" then replace(description, 'DOILEY', 'DOILY')
+      when (lower(description) like "%22467%" and stockcode = '22719') or (lower(description) like "wrong code") then "Wrongly coded 22467"
+      when lower(description) like "%adjustment%" then replace(description, 'Adjustment', 'adjustment')
+      when description like "SILVER/MOP ORBIT NECKLACE" then "SILVER M.O.P. ORBIT NECKLACE"
+      when lower(description) like "%wrong%" and stockcode = '22467' then "Wrongly coded 22719"
+      when lower(description) like "crushed" then "Crushed"
+      when description like "WALL ART BICYCLE SAFTEY" then "WALL ART BICYCLE SAFETY" 
+      when upper(description) like "%BICYCLE%" and upper(description) like "%WALL ART%" then "BICYCLE SAFTEY WALL ART"
+      when description like "LA JARDIN BOTANIQUE CUSHION COVER" then "LE JARDIN BOTANIQUE CUSHION COVER"
+      when description like "DECROTIVEVINTAGE COFFEE GRINDER BOX" then "DECROTIVE VINTAGE COFFEE GRINDER BOX"
+      when stockcode like "22776" then "SWEETHEART 3 TIER CAKE STAND"
+      when stockcode like "17107D" then "FLOWER FAIRY 5 SUMMER DRAW LINERS"
+      when stockcode like "23366" then "SET 12 COLOURING PENCILS DOILY"
+      when stockcode like "23370" then "SET 36 COLOURING PENCILS DOILY"
+      when stockcode like "22937" then "BAKING MOULD CHOCOLATE CUPCAKES"
+      when description like "CANDLEHOLDER PINK HANGING HEART" then "PINK HANGING HEART T-LIGHT HOLDER"
+      when stockcode like "23240" then "SET OF 4 KNICK KNACK TINS DOILY"
+      else description
+    end as new_description,
+    Quantity,
+    InvoiceDate,
+    date_wib,
+    UnitPrice,
+    CustomerID,
+    Country,
+    Quantity * UnitPrice as Revenue
+  from new_quantity)
+
+select * from new_desc
